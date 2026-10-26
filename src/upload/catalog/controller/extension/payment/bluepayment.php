@@ -104,10 +104,16 @@ class ControllerExtensionPaymentBluepayment extends ControllerExtensionPaymentBl
         $this->load->library('bluepayment/Service/Itn/Result/Result');
         $this->load->library('bluepayment/Service/Itn/Itn');
 
+        $orderId = null;
+
         try {
             $transactionConfirmed = true;
 
             $transaction = Gateway::doItnIn();
+            if ($transaction->getCurrency() === '' || !$this->ServiceCredentialsProvider->currencyServiceExists($transaction->getCurrency())) {
+                throw new \InvalidArgumentException('ITN currency is not configured.');
+            }
+
             $service_credentials = $this->ServiceCredentialsProvider->getCurrencyServiceCredentials($transaction->getCurrency());
 
             $gateway = new Gateway(

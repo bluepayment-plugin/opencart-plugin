@@ -54,7 +54,7 @@ final class AdminFormValidator
         $data = [];
 
         foreach ($this->request->post['payment_bluepayment_currency'] as $currency) {
-            if (empty($currency['service_id']) || empty($currency['shared_key'])) {
+            if (empty($currency['service_id']) || !isset($currency['shared_key']) || !is_string($currency['shared_key']) || trim($currency['shared_key']) === '') {
                 $data['message_warning'][] = sprintf($this->language->get('currency_settings_both_values_required'), $currency['custom_name']);
             } elseif (filter_var($currency['service_id'], FILTER_VALIDATE_INT) === false) {
                 $data['message_warning'][] = sprintf($this->language->get('currency_settings_service_id_integer_required'), $currency['custom_name']);

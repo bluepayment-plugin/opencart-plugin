@@ -62,7 +62,7 @@ final class Logger
             $this->registry->get('response')->addheader('Content-Transfer-Encoding: binary');
 
             $this->registry->get('response')
-                ->setOutput(file_get_contents($file, FILE_USE_INCLUDE_PATH, null));
+                ->setOutput(file_get_contents($file));
         } else {
             $this->registry->get('session')->data['message_warning'] = $this->registry->get('language')->get('log_file_download_error');
 
@@ -81,11 +81,7 @@ final class Logger
     {
         $files = $this->getFileList();
 
-        if (is_array($files)) {
-            return end($files);
-        }
-
-        return $files;
+        return $files ? end($files) : '';
     }
 
     public function getFormattedFileList(): ?array
@@ -99,9 +95,24 @@ final class Logger
         return $result;
     }
 
-    private function getFileList(): ?array
+    private function getFileList(): array
     {
-        return glob(DIR_LOGS . '/bluepayment*.log');
+        $directory = realpath(DIR_LOGS);
+        $files = [];
+
+        if ($directory === false) {
+            return $files;
+        }
+
+        foreach (glob($directory . '/bluepayment*.log') ?: [] as $file) {
+            $path = realpath($file);
+
+            if ($path !== false && !is_link($file) && is_file($path) && is_readable($path) && dirname($path) === $directory) {
+                $files[] = $path;
+            }
+        }
+
+        return $files;
     }
 
     private function getLogFileName(string $file_path): string
@@ -134,16 +145,33 @@ final class Logger
 
     private function getRequestedFilePath(): string
     {
-        return isset($this->registry->get('request')->get['selected_log_file'])
-            ? $this->registry->get('request')->get['selected_log_file']
-            : $this->getRecentLogPath();
+        $request = $this->registry->get('request')->get;
+
+        if (!array_key_exists('selected_log_file', $request)) {
+            return $this->getRecentLogPath();
+        }
+
+        $requested = $request['selected_log_file'];
+        if (!is_string($requested) || strpos($requested, "\0") !== false) {
+            return '';
+        }
+
+        // OpenCart 2/3 Request::clean() HTML-encodes GET values.
+        $requested = htmlspecialchars_decode($requested, ENT_COMPAT);
+        if (is_link($requested)) {
+            return '';
+        }
+
+        $path = realpath($requested);
+
+        return $path !== false && in_array($path, $this->getFileList(), true) ? $path : '';
     }
 
     private function logFileToArray(string $file): array
     {
         $result['logs'] = [];
         if (file_exists($file) && filesize($file) > 0) {
-            foreach (file($file, FILE_USE_INCLUDE_PATH, null) as $line) {
+            foreach (file($file) as $line) {
                 $result['logs'][] = $line;
             }
         } else {

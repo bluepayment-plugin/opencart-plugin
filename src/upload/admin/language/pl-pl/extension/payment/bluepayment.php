@@ -55,3 +55,5 @@ $_['helper_test_mode'] = 'Pozwala on na sprawdzenie działania modułu bez konie
 $_['helper_test_mode_alert_1'] = 'Identyfikator serwisu i klucz konfiguracyjny dla środowiska testowego różnią się od danych produkcyjnych.';
 $_['helper_test_mode_alert_2'] = 'Żeby uzyskać dane do środowiska testowego,';
 $_['helper_test_mode_alert_3'] = 'skontaktuj się z nami';
+
+$_['error_permission'] = 'Nie masz uprawnień do zmiany ustawień Autopay!';

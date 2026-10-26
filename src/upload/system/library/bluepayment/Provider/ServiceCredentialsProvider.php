@@ -20,23 +20,33 @@ final class ServiceCredentialsProvider
         $this->registry->get('load')->model('setting/setting');
     }
 
-    public function currencyServiceExists(): bool
+    public function currencyServiceExists(string $currency = ''): bool
     {
-        return property_exists($this->getAllServiceCredentials(), $this->current_currency);
+        $currency = $currency !== '' ? $currency : $this->current_currency;
+
+        return isset($this->getAllServiceCredentials()->{$currency});
     }
 
     public function getCurrencyServiceCredentials(string $currency = ''): ServiceCredentials
     {
         $service_credentials = $this->getAllServiceCredentials();
+        $currency = $currency !== '' ? $currency : $this->current_currency;
+        $credentials = $service_credentials->{$currency} ?? null;
 
-        if (!empty($currency)) {
-            $this->current_currency = $currency;
+        if (!($credentials instanceof \stdClass)) {
+            throw new \InvalidArgumentException('Payment service is not configured for this currency.');
         }
 
-        return new ServiceCredentials(
-            (int) $service_credentials->{$this->current_currency}->service_id,
-            $service_credentials->{$this->current_currency}->shared_key
-        );
+        $serviceId = (int) ($credentials->service_id ?? 0);
+        $sharedKey = $credentials->shared_key ?? '';
+
+        if ($serviceId <= 0 || !is_string($sharedKey) || trim($sharedKey) === '') {
+            throw new \InvalidArgumentException('Payment service credentials are incomplete.');
+        }
+
+        $this->current_currency = $currency;
+
+        return new ServiceCredentials($serviceId, trim($sharedKey));
     }
 
     public function getCurrentCurrency(): string
@@ -46,8 +56,9 @@ final class ServiceCredentialsProvider
 
     private function getAllServiceCredentials(): \stdClass
     {
-        return json_decode(
-            $this->registry->get('model_setting_setting')->getSettingValue('payment_bluepayment_currency')
-        );
+        $value = $this->registry->get('model_setting_setting')->getSettingValue('payment_bluepayment_currency');
+        $credentials = is_string($value) ? json_decode($value) : null;
+
+        return $credentials instanceof \stdClass ? $credentials : new \stdClass();
     }
 }

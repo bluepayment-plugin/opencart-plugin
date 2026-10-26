@@ -22,6 +22,11 @@ Do najważniejszych funkcji modułu zalicza się:
 
 ### Opis zmian
 
+Wersja 1.0.10
+- Dodaliśmy weryfikację waluty ITN i kompletności danych usługi, w tym kluczy złożonych z białych znaków.
+- Ograniczyliśmy odczyt do dozwolonych logów modułu i zabezpieczyliśmy ich podgląd przed XSS.
+- Dodaliśmy kontrolę uprawnień modify przy zapisie ustawień, zachowując dostęp do logów dla kont z access.
+
 Wersja 1.0.8
 - Zmieniliśmy tekst informacji o prowizji w panelu administracyjnym.
 - Zmieniliśmy link do oferty regulaminów w panelu administracyjnym.

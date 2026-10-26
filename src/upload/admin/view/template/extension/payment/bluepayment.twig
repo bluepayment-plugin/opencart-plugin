@@ -266,7 +266,7 @@
                                         <div class="col-sm-5">
                                             <select name="log_file_select" id="input-log-select" class="form-control js-log-select">
                                                 {% for name, path in log_files %}
-                                                    <option value="{{ path }}" selected="selected">{{ name }}</option>
+                                                    <option value="{{ path|escape }}" selected="selected">{{ name|escape }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -278,11 +278,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <div class="well well-sm js-log-content" style="overflow-wrap:break-word;">
-                                        {% for log in logs %}
-                                            {{ log }} <br>
-                                        {% endfor %}
-                                    </div>
+                                    <pre class="well well-sm js-log-content" style="white-space:pre-wrap;overflow-wrap:break-word;">{% for log in logs %}{{ log|escape }}{% endfor %}</pre>
                                 </div>
                             </div>
                         </div>
@@ -300,19 +296,19 @@ $(document).ready(function(){
             logDownloadButtonEl = $('.js-log-download'),
             currentDownloadHref = logDownloadButtonEl.data('href'),
             selectedOption = $('.js-log-select option:selected').prop('value'),
-            refreshLogUri = '{{ refresh_log_uri|replace({"&amp;": "&"}) }}' + '&selected_log_file=' + selectedOption;
+            refreshLogUri = '{{ refresh_log_uri|replace({"&amp;": "&"})|escape("js") }}' + '&selected_log_file=' + encodeURIComponent(selectedOption);
 
         $.ajax({
             url: refreshLogUri,
             dataType: 'json',
             beforeSend: function() {
-                logContentEl.html('{{ info_log_loading }}');
+                logContentEl.text('{{ info_log_loading|escape("js") }}');
             },
             success: function(response) {
-                let log = response.logs.join('<br>');
+                let log = response.logs.join('');
 
-                logContentEl.html(log);
-                logDownloadButtonEl.attr('href', currentDownloadHref + '&selected_log_file=' + selectedOption);
+                logContentEl.text(log);
+                logDownloadButtonEl.attr('href', currentDownloadHref + '&selected_log_file=' + encodeURIComponent(selectedOption));
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);

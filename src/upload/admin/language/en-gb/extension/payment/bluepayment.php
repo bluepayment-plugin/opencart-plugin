@@ -55,3 +55,5 @@ $_['helper_test_mode'] = 'It allows you to check the module without paying for t
 $_['helper_test_mode_alert_1'] = 'Partner\'s website ID and Configuration key (hash) are different for production and testing environment.';
 $_['helper_test_mode_alert_2'] = 'To get the data for the test environment,';
 $_['helper_test_mode_alert_3'] = 'contact us';
+
+$_['error_permission'] = 'Warning: You do not have permission to modify Autopay settings!';

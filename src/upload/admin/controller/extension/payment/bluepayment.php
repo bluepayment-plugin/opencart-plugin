@@ -51,6 +51,10 @@ class ControllerExtensionPaymentBluepayment extends Controller
 
             $data = $this->AdminFormValidator->validate();
 
+            if (!$this->user->hasPermission('modify', $this->ext_path)) {
+                $data['message_warning'] = $this->language->get('error_permission');
+            }
+
             if (empty($data)) {
                 $this->model_setting_setting->editSetting('payment_bluepayment', $this->request->post);
 
